@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-
-	"github.com/armourstill/gbase64"
 )
 
 func fromStdin() []byte {
@@ -32,24 +30,12 @@ func getdata(c *cli.Context) (data []byte, err error) {
 	return
 }
 
-func decode(format gbase64.Format, data []byte) error {
-	output, err := gbase64.Decode(format, data)
-	if err != nil {
-		return err
-	}
-	if len(output) == 0 {
-		return nil
-	}
-	fmt.Fprintln(os.Stdout, string(output))
-	return nil
-}
-
 func do(c *cli.Context) error {
 	data, err := getdata(c)
 	if err != nil {
 		return cli.Exit(err, 1)
 	}
-	format := gbase64.STD
+	format := STD
 	if c.IsSet("format") {
 		format = c.String("format")
 	}
@@ -59,13 +45,17 @@ func do(c *cli.Context) error {
 	}
 
 	if c.IsSet("decode") {
-		if err := decode(format, data); err != nil {
+		output, err := Decode(format, data)
+		if err != nil {
 			return cli.Exit(err, 1)
+		}
+		if len(output) != 0 {
+			fmt.Fprintln(os.Stdout, string(output))
 		}
 		return nil
 	}
 
-	output, err := gbase64.Encode(format, c.Bool("no-padding"), data)
+	output, err := Encode(format, c.Bool("no-padding"), data)
 	if err != nil {
 		return cli.Exit(err, 1)
 	}

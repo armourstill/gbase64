@@ -1,4 +1,4 @@
-package gbase64
+package main
 
 import "testing"
 
