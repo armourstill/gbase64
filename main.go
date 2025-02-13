@@ -36,8 +36,8 @@ func do(c *cli.Context) error {
 		return cli.Exit(err, 1)
 	}
 	format := STD
-	if c.IsSet("format") {
-		format = c.String("format")
+	if c.IsSet("url") {
+		format = URL
 	}
 	wrap := c.Int("wrap")
 	if wrap < 0 {
@@ -87,19 +87,16 @@ func main() {
 		Name:    "decode",
 		Aliases: []string{"d"},
 		Usage:   "decode data",
-		Value:   false,
 	})
-	app.Flags = append(app.Flags, &cli.StringFlag{
-		Name:    "format",
-		Aliases: []string{"f"},
-		Usage:   "encode/decode format, defined in RFC 4648, std or url",
-		Value:   "std",
+	app.Flags = append(app.Flags, &cli.BoolFlag{
+		Name:    "url",
+		Aliases: []string{"u"},
+		Usage:   "encode/decode with URL mode, defined in RFC 4648",
 	})
 	app.Flags = append(app.Flags, &cli.BoolFlag{
 		Name:    "no-padding",
 		Aliases: []string{"n"},
 		Usage:   "when encoding, omit padding characters",
-		Value:   false,
 	})
 	app.Flags = append(app.Flags, &cli.BoolFlag{
 		Name:    "ignore-garbage",
@@ -109,7 +106,7 @@ func main() {
 	app.Flags = append(app.Flags, &cli.IntFlag{
 		Name:    "wrap",
 		Aliases: []string{"w"},
-		Usage:   "wrap encoded lines after some characters, 0 to disable line wrapping",
+		Usage:   "when encoding, wrap encoded lines after some characters, 0 to disable line wrapping",
 		Value:   76,
 	})
 
