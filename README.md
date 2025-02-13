@@ -6,5 +6,6 @@ go install github.com/armourstill/gbase64@<tag>
 ```
 
 ## Extra features
-- `-f`: Encode/Decode with URL format
-- `-n`: Encode with no-padding mode
+- `--url-mode, -u`: Encode/Decode with URL format
+- `--no-padding, -n`: Encode with no-padding mode
+
