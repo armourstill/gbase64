@@ -80,7 +80,7 @@ func main() {
 		Name:      "gbase64",
 		Usage:     "Encode/Decode data from FILE or standard input, to standard output",
 		UsageText: usageText,
-		Version:   "v0.9.0",
+		Version:   "v0.10.0",
 		Action:    do,
 	}
 	app.Flags = append(app.Flags, &cli.BoolFlag{
