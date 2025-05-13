@@ -8,6 +8,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var (
+	version         = "Unknown"
+	compilerVersion = "Unknown"
+)
+
 func fromStdin() []byte {
 	var data []byte
 	scanner := bufio.NewScanner(os.Stdin)
@@ -80,7 +85,7 @@ func main() {
 		Name:      "gbase64",
 		Usage:     "Encode/Decode data from FILE or standard input, to standard output",
 		UsageText: usageText,
-		Version:   "v0.10.0",
+		Version:   fmt.Sprint(version, " (", compilerVersion, ")"),
 		Action:    do,
 	}
 	app.Flags = append(app.Flags, &cli.BoolFlag{
@@ -89,9 +94,9 @@ func main() {
 		Usage:   "decode data",
 	})
 	app.Flags = append(app.Flags, &cli.BoolFlag{
-		Name:    "url",
-		Aliases: []string{"u"},
-		Usage:   "encode/decode with URL mode, defined in RFC 4648",
+		Name:    "ignore-garbage",
+		Aliases: []string{"i"},
+		Usage:   "when decoding, ignore new line characters \\r and \\n",
 	})
 	app.Flags = append(app.Flags, &cli.BoolFlag{
 		Name:    "no-padding",
@@ -99,9 +104,9 @@ func main() {
 		Usage:   "when encoding, omit padding characters",
 	})
 	app.Flags = append(app.Flags, &cli.BoolFlag{
-		Name:    "ignore-garbage",
-		Aliases: []string{"i"},
-		Usage:   "when decoding, ignore new line characters \\r and \\n",
+		Name:    "url",
+		Aliases: []string{"u"},
+		Usage:   "encode/decode with URL mode, defined in RFC 4648",
 	})
 	app.Flags = append(app.Flags, &cli.IntFlag{
 		Name:    "wrap",
