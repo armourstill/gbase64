@@ -6,15 +6,19 @@ COMPILER_VERSION ?= $(shell go version | awk '{print $$3}')
 BIN_PATH = bin/$(ARCH)/$(OS)
 BIN_NAME = gbase64
 
+ifeq ($(OS), windows)
+	BIN_NAME := $(BIN_NAME).exe
+endif
+
 .PHONY: bin
 bin: vendor
 	GOOS=$(OS) GOARCH=$(ARCH) go build \
 		-ldflags "-s -w -X main.version=$(VERSION) -X main.compilerVersion=$(COMPILER_VERSION)" \
-		-o $(BIN_PATH)/$(BIN_NAME) github.com/armourstill/$(BIN_NAME)
+		-o $(BIN_PATH)/$(BIN_NAME) github.com/armourstill/gbase64
 
 .PHONY: release
 release: bin
-	zip $(BIN_PATH)/$(BIN_NAME)-$(VERSION).$(OS).$(ARCH).zip $(BIN_PATH)/$(BIN_NAME)
+	cd $(BIN_PATH) && zip $(BIN_NAME)-$(VERSION).$(OS).$(ARCH).zip $(BIN_NAME)
 
 vendor:
 	go mod tidy && go mod vendor
