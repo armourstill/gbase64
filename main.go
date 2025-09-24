@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -13,68 +13,46 @@ var (
 	compilerVersion = "Unknown"
 )
 
-func fromStdin() []byte {
-	var data []byte
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		data = append(data, scanner.Bytes()...)
-	}
-	return data
-}
-
-func getdata(c *cli.Context) (data []byte, err error) {
+// openInput returns an io.ReadCloser for the input source.
+// If no FILE is provided or FILE is "-", it returns stdin as a ReadCloser.
+func openInput(c *cli.Context) (io.ReadCloser, error) {
 	if c.Args().Len() > 1 {
 		return nil, fmt.Errorf("file count can not be more than 1")
 	}
 	name := c.Args().First()
 	if len(name) == 0 || name == "-" {
-		data = fromStdin()
-	} else {
-		data, err = os.ReadFile(name)
+		// Wrap stdin to satisfy the ReadCloser interface.
+		return io.NopCloser(os.Stdin), nil
 	}
-	return
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
 }
 
 func do(c *cli.Context) error {
-	data, err := getdata(c)
+	in, err := openInput(c)
 	if err != nil {
 		return cli.Exit(err, 1)
 	}
-	format := STD
-	if c.IsSet("url") {
-		format = URL
-	}
+	defer in.Close()
+
 	wrap := c.Int("wrap")
 	if wrap < 0 {
 		return cli.Exit(fmt.Errorf("invalid wrap value %d", wrap), 1)
 	}
-
+	// Streaming decode
 	if c.IsSet("decode") {
-		output, err := Decode(format, data)
-		if err != nil {
+		if err := DecodeStream(c.Bool("url"), c.Bool("ignore-garbage"), in, os.Stdout); err != nil {
 			return cli.Exit(err, 1)
 		}
-		if len(output) != 0 {
-			fmt.Fprintln(os.Stdout, string(output))
-		}
 		return nil
 	}
-
-	output, err := Encode(format, c.Bool("no-padding"), data)
-	if err != nil {
+	// Streaming encode
+	if err := EncodeStream(c.Bool("url"), c.Bool("no-padding"), wrap, in, os.Stdout); err != nil {
 		return cli.Exit(err, 1)
 	}
-	if len(output) == 0 {
-		return nil
-	}
-	if wrap == 0 {
-		fmt.Fprintln(os.Stdout, string(output))
-		return nil
-	}
-	for index := 0; index < len(output); index += wrap {
-		fmt.Fprintln(os.Stdout, string(output[index:min(index+wrap, len(output))]))
-	}
-
 	return nil
 }
 
